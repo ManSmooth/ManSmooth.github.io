@@ -1,5 +1,8 @@
 <html>
 <body>
-	<?php echo $postBody = file_get_contents("php://input"); ?>
+
+	Welcome <?php echo $_POST["username"]; ?><br>
+	Your email address is: <?php echo $_POST["password"]; ?>
+
 </body>
 </html>
