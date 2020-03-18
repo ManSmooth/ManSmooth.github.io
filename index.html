@@ -4,6 +4,48 @@
 	<title>landing</title>
 </head>
 <body>
-	<p>landing page</p>
+	<form action="http://data.samakkhi.ac.th/stuonline/login/validate_credentials" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"> <i class="fa fa-times"></i></span></button>
+                    <h4 class="modal-title" id="myModalLabel"> <b>ฝ่ายวิชาการ</b> </h4>
+                </div>
+                <div class="modal-body">
+ 
+                    
+                    <div class="col-sm-6 text-center hidden-xs">
+                        <img src="http://data.samakkhi.ac.th/stuonline/img/swk.jpg" vspace="10" hspace="10">
+                    </div>
+                    <div class="col-sm-6">
+
+                        <center>
+                            <h4><b>ป้อน ชื่อ รหัสผ่าน</b></h4>
+                        </center> 
+                        <div class="col-sm-12">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="USERNAME" required="">
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-12">&nbsp;</div>
+                        
+                        <div class="col-sm-12">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="PASSWORD" required="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" class="form-control" name="log_type" id="log_type" value="wichakan">
+                    
+                    <div class="clearfix"></div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-primary" value="เข้าระบบ"> 
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">ยกเลิก</button> 
+                </div>
+            </form>
 </body>
 </html>
