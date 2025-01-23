@@ -18,16 +18,42 @@
 
 	let latest: Array<Character> = $state([]);
 	let pulled: Record<keyof typeof roster, number> = $state({});
+	const pulledAmount: number = $derived(
+		Object.values(pulled).reduce((prev, curr) => prev + curr, 0)
+	);
 	// biome-ignore lint/style/useConst: Svelte
 	let count: number = $state(10);
+
+	// biome-ignore lint/style/useConst: Svelte
+	let selectedChara: keyof typeof roster = $state('perlica');
+	// biome-ignore lint/style/useConst: Svelte
+	let targetAmount: number = $state(6);
+
 	function doRoll() {
+		const logsEnabled = count <= 1000;
+		console.log(logsEnabled);
 		latest = [];
 		for (let index = 0; index < count; index++) {
-			const id = roll();
+			const id = roll(logsEnabled);
 			if (id) {
-				latest.push(roster[id]);
+				if (logsEnabled) {
+					latest.push(roster[id]);
+				}
 				if (id in pulled) pulled[id]++;
 				else pulled[id] = 1;
+			}
+		}
+	}
+	function rollUntil(chara: keyof typeof roster, n: number) {
+		doReset();
+		for (;;) {
+			const id = roll(false);
+			if (id) {
+				if (id in pulled) pulled[id]++;
+				else pulled[id] = 1;
+			}
+			if (chara in pulled && pulled[chara] >= n) {
+				return;
 			}
 		}
 	}
@@ -58,6 +84,24 @@
 			<div class="h-1 w-1 bg-zinc-900"></div>
 		</button>
 		<input type="number" bind:value={count} class="w-32 text-zinc-900" />
+	</div>
+	<div class="flex gap-4">
+		<button
+			class="flex w-fit items-center gap-2 bg-yellow-400 px-2 py-1 text-zinc-900"
+			onclick={() => rollUntil(selectedChara, targetAmount)}
+		>
+			<div class="h-1 w-1 bg-zinc-900"></div>
+			ROLL UNTIL
+			<div class="h-1 w-1 bg-zinc-900"></div>
+		</button>
+		<select class="w-fit text-zinc-900" bind:value={selectedChara}>
+			{#each Object.entries(roster) as [id, chara]}
+				<option value={id}>{chara.name}</option>
+			{/each}
+		</select>
+		<input type="number" bind:value={targetAmount} class="w-32 text-zinc-900" />
+	</div>
+	<div class="flex gap-4">
 		<button
 			class="flex w-fit items-center gap-2 bg-yellow-400 px-2 py-1 text-zinc-900"
 			onclick={doReset}
@@ -67,7 +111,7 @@
 			<div class="h-1 w-1 bg-zinc-900"></div>
 		</button>
 	</div>
-	{#if latest.length > 0}
+	{#if pulledAmount > 0}
 		<div class="flex flex-col gap-2">
 			<p>{10 - $fivePity} rolls until 5★ or better</p>
 			<p>{80 - $sixPity} rolls until 6★</p>
@@ -81,13 +125,15 @@
 				).toFixed(1)}%
 			</p>
 		</div>
-		<div class="grid w-full grid-cols-10 gap-1">
-			{#each latest as chara}
-				{#key chara}
-					<CharacterCard character={chara} />
-				{/key}
-			{/each}
-		</div>
+		{#if latest.length > 0}
+			<div class="grid w-full grid-cols-10 gap-1">
+				{#each latest as chara}
+					{#key chara}
+						<CharacterCard character={chara} />
+					{/key}
+				{/each}
+			</div>
+		{/if}
 		{#if $gachaLogs.length > 0}
 			<p class="text-xl">Logs</p>
 			<div class="flex h-64 flex-col gap-2 overflow-y-scroll rounded-lg bg-zinc-800 p-4">
@@ -97,7 +143,7 @@
 			</div>
 		{/if}
 		<p class="text-xl">
-			Pulled characters ({Object.values(pulled).reduce((prev, curr) => prev + curr, 0)})
+			Pulled characters ({pulledAmount})
 		</p>
 		<div class="flex flex-wrap gap-2">
 			{#each Object.entries(pulled) as [id, count]}

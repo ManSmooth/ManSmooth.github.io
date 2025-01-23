@@ -15,14 +15,16 @@ export const gachaPool: Writable<Map<number, Array<keyof typeof roster>>> = writ
 
 export const gachaLogs: Writable<string[]> = writable([]);
 
-function logEntry(text: string) {
-	gachaLogs.update((v) => [
-		`[${new Date().toISOString().split('T')[1].slice(0, -1)}] ${text}`,
-		...v
-	]);
+function logEntry(text: string, logs: boolean) {
+	if (logs) {
+		gachaLogs.update((v) => [
+			`[${new Date().toISOString().split('T')[1].slice(0, -1)}] ${text}`,
+			...v
+		]);
+	}
 }
 
-function reward(rarityMap: Map<number, Array<keyof typeof roster>>, star: number) {
+function reward(rarityMap: Map<number, Array<keyof typeof roster>>, star: number, logs: boolean) {
 	if (star >= 5) {
 		fivePity.set(0);
 	}
@@ -34,11 +36,11 @@ function reward(rarityMap: Map<number, Array<keyof typeof roster>>, star: number
 	if (rateUp <= 0.5)
 		switch (star) {
 			case 5:
-				logEntry('Won 5★ rate-up');
+				logEntry('Won 5★ rate-up', logs);
 				return readStore(rateUpFive);
 			case 6:
 				forceToggle.set(false);
-				logEntry('Won 6★ rate-up');
+				logEntry('Won 6★ rate-up', logs);
 				return readStore(rateUpSix);
 		}
 
@@ -65,7 +67,7 @@ export function init() {
 	gachaPool.set(rarityMap);
 }
 
-export function roll() {
+export function roll(logs: boolean) {
 	const rarityMap = readStore(gachaPool);
 	if (!rarityMap) {
 		return undefined;
@@ -81,7 +83,7 @@ export function roll() {
 		sixPity.set(0);
 		softPityRollCount.set(0);
 		forceToggle.set(false);
-		logEntry('6★ Forced Pity');
+		logEntry('6★ Forced Pity', logs);
 		return readStore(rateUpSix);
 	}
 
@@ -91,19 +93,19 @@ export function roll() {
 	// const sixRate = 0.008;
 
 	if (rand < sixRate) {
-		logEntry(`6★ ${rollCount} @ ${(sixRate * 100).toFixed(1)}%`);
-		return reward(rarityMap, 6);
+		logEntry(`6★ ${rollCount} @ ${(sixRate * 100).toFixed(1)}%`, logs);
+		return reward(rarityMap, 6, logs);
 	}
 	if ((readStore(sixPity) ?? 0) % 80 === 0) {
-		logEntry('6★ Pity');
-		return reward(rarityMap, 6);
+		logEntry('6★ Pity', logs);
+		return reward(rarityMap, 6, logs);
 	}
 	if (rand < sixRate + 0.08) {
-		return reward(rarityMap, 5);
+		return reward(rarityMap, 5, logs);
 	}
 	if ((readStore(fivePity) ?? 0) % 10 === 0) {
-		logEntry('5★ Pity');
-		return reward(rarityMap, 5);
+		logEntry('5★ Pity', logs);
+		return reward(rarityMap, 5, logs);
 	}
-	return reward(rarityMap, 4);
+	return reward(rarityMap, 4, logs);
 }
