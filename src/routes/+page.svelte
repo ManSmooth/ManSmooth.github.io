@@ -146,30 +146,34 @@
 			Pulled characters ({pulledAmount})
 		</p>
 		<div class="flex flex-wrap gap-2">
-			{#each Object.entries(pulled) as [id, count]}
+			{#each Object.entries(pulled)
+				.sort(([k1], [k2]) => roster[k2].rarity - roster[k1].rarity)
+				.reduce((prev, curr) => [...prev, curr], new Array()) as [id, count]}
 				{@const chara = roster[id]}
-				<div
-					class={`flex w-fit flex-col gap-2 rounded-md p-[5px] text-zinc-900
+				{#key chara}
+					<div
+						class={`flex w-fit flex-col gap-2 rounded-md p-[5px] text-zinc-900
 					${id === $rateUpFive || id === $rateUpSix ? 'bg-zinc-100' : ''}
 					`}
-				>
-					<div
-						class={`flex w-fit flex-col gap-1 rounded-md bg-gradient-to-br p-2 ${chara.rarity === 6 ? 'from-red-300 to-orange-400' : chara.rarity === 5 ? 'from-yellow-300 to-amber-400' : 'from-purple-300 to-fuchsia-400'}`}
 					>
-						<div class="h-32 w-32 overflow-hidden rounded-lg">
-							<img class="scale-[2]" src={chara.imgUrl} alt={chara.name} />
+						<div
+							class={`flex w-fit flex-col gap-1 rounded-md bg-gradient-to-br p-2 ${chara.rarity === 6 ? 'from-red-300 to-orange-400' : chara.rarity === 5 ? 'from-yellow-300 to-amber-400' : 'from-purple-300 to-fuchsia-400'}`}
+						>
+							<div class="h-32 w-32 overflow-hidden rounded-lg">
+								<img class="scale-[2]" src={chara.imgUrl} alt={chara.name} />
+							</div>
+							<p>
+								{'★'.repeat(chara.rarity)}
+							</p>
+							<p>
+								{chara.name}
+							</p>
+							<p class="text-right">
+								x{count}
+							</p>
 						</div>
-						<p>
-							{'★'.repeat(chara.rarity)}
-						</p>
-						<p>
-							{chara.name}
-						</p>
-						<p class="text-right">
-							x{count}
-						</p>
 					</div>
-				</div>
+				{/key}
 			{/each}
 		</div>
 	{:else}
