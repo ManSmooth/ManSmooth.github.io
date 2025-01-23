@@ -17,13 +17,17 @@
 	import { onMount } from 'svelte';
 
 	let latest: Array<Character> = $state([]);
-	const count: number = $state(10);
+	let pulled: Record<keyof typeof roster, number> = $state({});
+	// biome-ignore lint/style/useConst: Svelte
+	let count: number = $state(10);
 	function doRoll() {
 		latest = [];
 		for (let index = 0; index < count; index++) {
 			const id = roll();
 			if (id) {
 				latest.push(roster[id]);
+				if (id in pulled) pulled[id]++;
+				else pulled[id] = 1;
 			}
 		}
 	}
@@ -38,6 +42,7 @@
 		$forceToggle = true;
 		$gachaLogs = [];
 		latest = [];
+		pulled = {};
 	}
 </script>
 
@@ -52,6 +57,7 @@
 			ROLL
 			<div class="h-1 w-1 bg-zinc-900"></div>
 		</button>
+		<input type="number" bind:value={count} class="w-32 text-zinc-900" />
 		<button
 			class="flex w-fit items-center gap-2 bg-yellow-400 px-2 py-1 text-zinc-900"
 			onclick={doReset}
@@ -90,6 +96,36 @@
 				{/each}
 			</div>
 		{/if}
+		<p class="text-xl">
+			Pulled characters ({Object.values(pulled).reduce((prev, curr) => prev + curr, 0)})
+		</p>
+		<div class="flex flex-wrap gap-2">
+			{#each Object.entries(pulled) as [id, count]}
+				{@const chara = roster[id]}
+				<div
+					class={`flex w-fit flex-col gap-2 rounded-md p-[5px] text-zinc-900
+					${id === $rateUpFive || id === $rateUpSix ? 'bg-zinc-100' : ''}
+					`}
+				>
+					<div
+						class={`flex w-fit flex-col gap-1 rounded-md bg-gradient-to-br p-2 ${chara.rarity === 6 ? 'from-red-300 to-orange-400' : chara.rarity === 5 ? 'from-yellow-300 to-amber-400' : 'from-purple-300 to-fuchsia-400'}`}
+					>
+						<div class="h-32 w-32 overflow-hidden rounded-lg">
+							<img class="scale-[2]" src={chara.imgUrl} alt={chara.name} />
+						</div>
+						<p>
+							{'★'.repeat(chara.rarity)}
+						</p>
+						<p>
+							{chara.name}
+						</p>
+						<p class="text-right">
+							x{count}
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
 	{:else}
 		<p class="text-xl">Gacha Pool</p>
 		{#each $gachaPool.keys() as star}
